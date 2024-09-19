@@ -36,7 +36,19 @@ def create_points_list(txtfile):
 def find_distance(point1, point2):
     return math.sqrt(((point2[0] - point1[0]) ** 2) + ((point2[1] - point1[1]) ** 2)) 
 
-def monkey(points):
+def create_strip(points, d):
+    strip = []
+    middle = middle_x_value(points)
+    for point in points:
+        if (point[0] > middle - d) and (point[0] < middle + d):
+            strip.append(point)
+    return strip
+
+
+def middle_x_value(points):
+    return (points[(len(points) // 2) - 1][0] + points[(len(points) // 2)][0]) / 2
+
+def brute_force(points):
     numofpoints = len(points)
     smallest_distance = find_distance(points[0],points[1])
     curr_distance = smallest_distance + 1
@@ -53,10 +65,27 @@ def sort_by_x(points):
 def sort_by_y(points):
     return sorted(points, key=lambda point:point[1])
 
+def closest_point(points):
+    if len(points) <= 3:
+        return brute_force(points)
+    pointsx = sort_by_x(points)
+    d1 = closest_point(pointsx[:len(pointsx) // 2])
+    d2 = closest_point(pointsx[len(pointsx) // 2:])
+    min_dist = min(d1,d2)
+    midpoint = middle_x_value(pointsx)
+    strip = create_strip(pointsx, min_dist)
+    strip = sort_by_y(strip)
+    for j in range(len(strip) - 1):
+        for i in range(len(strip[j:]) - 1):
+            if strip[j][1] - strip[i + j + 1][1] > min_dist:
+                break
+            if find_distance(strip[j], strip[i + j + 1]) < min_dist:
+                min_dist = find_distance(strip[j], strip[i + j + 1])
+    return min_dist
+    
+def main():
+    points_base = create_points_list(txtfile)
+    print(closest_point(points_base))
 
-points = create_points_list(txtfile)
-print(sort_by_y(points))
-print() 
-print()
-print()
-print(monkey(points))
+if __name__ == "__main__":
+    main()
